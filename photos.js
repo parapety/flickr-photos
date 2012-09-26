@@ -68,9 +68,56 @@ var setupPhotos = (function ($) {
             elm.className = 'photo';
             elm.appendChild(img);
             holder.appendChild(elm);
+            favHeart(elm, img.src);
         };
     }
-
+    
+    function favHeart(elm, rel)
+    {
+        var heart = document.createElement('span');
+        if(getCookie(rel))
+        {
+            heart.className = 'icon-heart';
+        }
+        else
+        {
+            heart.className = 'icon-heart-empty';
+        }
+        heart.setAttribute('rel', rel);
+        elm.appendChild(heart);
+        heart.addEventListener('click', addToFav);
+    }
+    
+    function addToFav(e)
+    {
+        var o = e.target;
+        o.className = 'icon-heart';
+        setCookie(o.getAttribute('rel'), 1);
+    }
+    
+    function setCookie(c_name, value)
+    {
+        var expdate = new Date();
+        expdate.setDate(expdate.getDate() + 1);
+        var c_value = escape(value) + "; expires="+expdate.toUTCString();
+        document.cookie=c_name + "=" + c_value;
+    }
+    
+    function getCookie(c_name)
+    {
+        var i,x,y,ARRcookies=document.cookie.split(";");
+        for (i=0;i<ARRcookies.length;i++)
+        {
+            x = ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+            y = ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+            x = x.replace(/^\s+|\s+$/g,"");
+            if (x == c_name)
+            {
+                return unescape(y);
+            }
+        }
+    }
+    
     // ----
     
     var max_per_tag = 5;
