@@ -68,14 +68,15 @@ var setupPhotos = (function ($) {
             elm.className = 'photo';
             elm.appendChild(img);
             holder.appendChild(elm);
-            favHeart(elm, img.src);
+            var a = img.src.split('/');
+            favHeart(elm, a.pop()+ '-' +a.pop());
         };
     }
     
     function favHeart(elm, rel)
     {
         var heart = document.createElement('span');
-        if(getCookie(rel))
+        if(findInFav(rel))
         {
             heart.className = 'icon-heart';
         }
@@ -85,14 +86,72 @@ var setupPhotos = (function ($) {
         }
         heart.setAttribute('rel', rel);
         elm.appendChild(heart);
-        heart.addEventListener('click', addToFav);
+        heart.addEventListener('click', dispatchClick);
+    }
+    
+    function dispatchClick(e)
+    {
+        var o = e.target;
+        switch(o.className)
+        {
+            case 'icon-heart': 
+                removeFromFav(e);
+            break;
+            case 'icon-heart-empty': 
+                addToFav(e);
+            break;
+        }
     }
     
     function addToFav(e)
     {
         var o = e.target;
         o.className = 'icon-heart';
-        setCookie(o.getAttribute('rel'), 1);
+        var rel = o.getAttribute('rel');
+        
+        if(findInFav(rel)) return;
+        
+        var f = getCookie('fav');
+        if(!f)
+        {
+            f = '';
+        }
+        f = f + '|' + rel;
+        setCookie('fav', f);
+    }
+    
+    function removeFromFav(e)
+    {
+        var o = e.target;
+        o.className = 'icon-heart-empty';
+        var rel = o.getAttribute('rel');
+        var f = getCookie('fav');
+        if(!f)
+        {
+            return;
+        }
+        var t;
+        if(t = findInFav(rel))
+        {
+            setCookie('fav', f.replace( '|' + t, '' ));
+        }
+    }
+    
+    function findInFav(e)
+    {
+        var f = getCookie('fav');
+        if(!f)
+        {
+            return false;
+        }
+        var a = f.split('|');
+        for(var i in a)
+        {
+            if(a[i] == e)
+            {
+                return a[i];
+            }
+        }
     }
     
     function setCookie(c_name, value)
@@ -128,5 +187,7 @@ var setupPhotos = (function ($) {
             each(items.map(renderPhoto), imageAppender('photos'));
             callback();
         });
+        
+        var callback_name = 'callback_' + Math.floor(Math.random() * 100000);
     };
 }(jQuery));
